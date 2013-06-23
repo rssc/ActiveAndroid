@@ -148,17 +148,22 @@ public abstract class Model {
 			}
 		}
 
+		boolean retVal = false;
+
 		if (mId == null) {
 			mId = db.insert(mTableInfo.getTableName(), null, values);
-			return (mId != -1);
+			retVal =  (mId != -1);
 		}
 		else {
 			int ret = db.update(mTableInfo.getTableName(), values, "Id=" + mId, null);
-			return (ret > 0);
+			retVal =  (ret > 0);
 		}
 
 		Cache.getContext().getContentResolver()
 				.notifyChange(ContentProvider.createUri(mTableInfo.getType(), mId), null);
+
+		return retVal;
+
 	}
 
 	// Convenience methods
