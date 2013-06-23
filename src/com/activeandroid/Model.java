@@ -24,6 +24,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.activeandroid.annotation.Column;
+import com.activeandroid.content.ContentProvider;
 import com.activeandroid.query.Delete;
 import com.activeandroid.query.From;
 import com.activeandroid.query.Select;
@@ -62,6 +63,9 @@ public abstract class Model {
 	public final void delete() {
 		Cache.openDatabase().delete(mTableInfo.getTableName(), "Id=?", new String[] { getId().toString() });
 		Cache.removeEntity(this);
+
+		Cache.getContext().getContentResolver()
+				.notifyChange(ContentProvider.createUri(mTableInfo.getType(), mId), null);
 	}
 
 	public final boolean save() {
@@ -153,6 +157,8 @@ public abstract class Model {
 			return (ret > 0);
 		}
 
+		Cache.getContext().getContentResolver()
+				.notifyChange(ContentProvider.createUri(mTableInfo.getType(), mId), null);
 	}
 
 	// Convenience methods
@@ -167,7 +173,7 @@ public abstract class Model {
 
 	// Model population
 
-	public final void loadFromCursor(Class<? extends Model> type, Cursor cursor) {
+	public final void loadFromCursor(Cursor cursor) {
 		for (Field field : mTableInfo.getFields()) {
 			final String fieldName = mTableInfo.getColumnName(field);
 			Class<?> fieldType = field.getType();
@@ -251,13 +257,13 @@ public abstract class Model {
 				}
 			}
 			catch (IllegalArgumentException e) {
-				Log.e(e.getMessage());
+                Log.e(e.getClass().getName(), e);
 			}
 			catch (IllegalAccessException e) {
-				Log.e(e.getMessage());
+                Log.e(e.getClass().getName(), e);
 			}
 			catch (SecurityException e) {
-				Log.e(e.getMessage());
+                Log.e(e.getClass().getName(), e);
 			}
 		}
 	}
@@ -277,6 +283,11 @@ public abstract class Model {
 	//////////////////////////////////////////////////////////////////////////////////////
 	// OVERRIDEN METHODS
 	//////////////////////////////////////////////////////////////////////////////////////
+
+	@Override
+	public String toString() {
+		return mTableInfo.getTableName() + "@" + getId();
+	}
 
 	@Override
 	public boolean equals(Object obj) {
