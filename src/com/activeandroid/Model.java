@@ -25,6 +25,7 @@ import android.database.sqlite.SQLiteDatabase;
 
 import com.activeandroid.annotation.Column;
 import com.activeandroid.query.Delete;
+import com.activeandroid.query.From;
 import com.activeandroid.query.Select;
 import com.activeandroid.serializer.TypeSerializer;
 import com.activeandroid.util.Log;
@@ -63,7 +64,7 @@ public abstract class Model {
 		Cache.removeEntity(this);
 	}
 
-	public final void save() {
+	public final boolean save() {
 		final SQLiteDatabase db = Cache.openDatabase();
 		final ContentValues values = new ContentValues();
 
@@ -145,10 +146,13 @@ public abstract class Model {
 
 		if (mId == null) {
 			mId = db.insert(mTableInfo.getTableName(), null, values);
+			return (mId != -1);
 		}
 		else {
-			db.update(mTableInfo.getTableName(), values, "Id=" + mId, null);
+			int ret = db.update(mTableInfo.getTableName(), values, "Id=" + mId, null);
+			return (ret > 0);
 		}
+
 	}
 
 	// Convenience methods
@@ -264,6 +268,10 @@ public abstract class Model {
 
 	protected final <E extends Model> List<E> getMany(Class<? extends Model> type, String foreignKey) {
 		return new Select().from(type).where(Cache.getTableName(type) + "." + foreignKey + "=?", getId()).execute();
+	}
+
+	protected final From getManyFrom(Class<? extends Model> type, String foreignKey) {
+	    return new Select().from(type).where(Cache.getTableName(type) + "." + foreignKey + "=?", getId());
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
