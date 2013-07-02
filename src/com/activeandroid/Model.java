@@ -16,13 +16,10 @@ package com.activeandroid;
  * limitations under the License.
  */
 
-import java.lang.reflect.Field;
-import java.util.List;
-
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-
+import android.provider.BaseColumns;
 import com.activeandroid.annotation.Column;
 import com.activeandroid.content.ContentProvider;
 import com.activeandroid.query.Delete;
@@ -31,13 +28,16 @@ import com.activeandroid.serializer.TypeSerializer;
 import com.activeandroid.util.Log;
 import com.activeandroid.util.ReflectionUtils;
 
+import java.lang.reflect.Field;
+import java.util.List;
+
 @SuppressWarnings("unchecked")
 public abstract class Model {
 	//////////////////////////////////////////////////////////////////////////////////////
 	// PRIVATE MEMBERS
 	//////////////////////////////////////////////////////////////////////////////////////
 
-	@Column(name = "Id")
+	@Column(name = BaseColumns._ID)
 	private Long mId = null;
 
 	private TableInfo mTableInfo;
@@ -60,7 +60,8 @@ public abstract class Model {
 	}
 
 	public final void delete() {
-		Cache.openDatabase().delete(mTableInfo.getTableName(), "Id=?", new String[] { getId().toString() });
+		Cache.openDatabase().delete(mTableInfo.getTableName(), BaseColumns._ID + "=?",
+				new String[] { getId().toString() });
 		Cache.removeEntity(this);
 
 		Cache.getContext().getContentResolver()
@@ -151,7 +152,7 @@ public abstract class Model {
 			mId = db.insert(mTableInfo.getTableName(), null, values);
 		}
 		else {
-			db.update(mTableInfo.getTableName(), values, "Id=" + mId, null);
+			db.update(mTableInfo.getTableName(), values, BaseColumns._ID + "=" + mId, null);
 		}
 
 		Cache.getContext().getContentResolver()
@@ -161,11 +162,11 @@ public abstract class Model {
 	// Convenience methods
 
 	public static void delete(Class<? extends Model> type, long id) {
-		new Delete().from(type).where("Id=?", id).execute();
+		new Delete().from(type).where(BaseColumns._ID + "=?", id).execute();
 	}
 
 	public static <T extends Model> T load(Class<T> type, long id) {
-		return new Select().from(type).where("Id=?", id).executeSingle();
+		return new Select().from(type).where(BaseColumns._ID + "=?", id).executeSingle();
 	}
 
 	// Model population
@@ -232,7 +233,7 @@ public abstract class Model {
 
 					Model entity = Cache.getEntity(entityType, entityId);
 					if (entity == null) {
-						entity = new Select().from(entityType).where("Id=?", entityId).executeSingle();
+						entity = new Select().from(entityType).where(BaseColumns._ID + "=?", entityId).executeSingle();
 					}
 
 					value = entity;
@@ -254,13 +255,13 @@ public abstract class Model {
 				}
 			}
 			catch (IllegalArgumentException e) {
-                Log.e(e.getClass().getName(), e);
+				Log.e(e.getClass().getName(), e);
 			}
 			catch (IllegalAccessException e) {
-                Log.e(e.getClass().getName(), e);
+				Log.e(e.getClass().getName(), e);
 			}
 			catch (SecurityException e) {
-                Log.e(e.getClass().getName(), e);
+				Log.e(e.getClass().getName(), e);
 			}
 		}
 	}
