@@ -172,7 +172,7 @@ public abstract class Model {
 		new Delete().from(type).where("Id=?", id).execute();
 	}
 
-	public static <T extends Model> T load(Class<? extends Model> type, long id) {
+	public static <T extends Model> T load(Class<T> type, long id) {
 		return new Select().from(type).where("Id=?", id).executeSingle();
 	}
 
@@ -277,7 +277,7 @@ public abstract class Model {
 	// PROTECTED METHODS
 	//////////////////////////////////////////////////////////////////////////////////////
 
-	protected final <E extends Model> List<E> getMany(Class<? extends Model> type, String foreignKey) {
+	protected final <T extends Model> List<T> getMany(Class<T> type, String foreignKey) {
 		return new Select().from(type).where(Cache.getTableName(type) + "." + foreignKey + "=?", getId()).execute();
 	}
 
